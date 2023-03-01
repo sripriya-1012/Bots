@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Alba Chatbot Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@openai/api@1.1.0/build/index.js"></script>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background-image: url("https://img.freepik.com/free-vector/network-mesh-wire-digital-technology-background_1017-27428.jpg?w=826&t=st=1677664942~exp=1677665542~hmac=294355fd4c3e086e2ba66dd75f57d925a1094440a196e9e82649025d2909c259");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        #chat-btn {
+            position: fixed;
+            height: 50px;
+            width: 50px;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px #0a0a0a;
+            font-size: x-large;
+        }
+
+        #chat-btn:hover {
+            background-color: #dddde0;
+        }
+
+
+        #chatbot {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px #0a0a0a;
+            z-index: 9999;
+            height: 75%;
+            width: 350px;
+            /* margin:30px; */
+        }
+
+        /* Add the fade-in animation */
+        #chatbot.fade-in {
+            animation: fade-in 1s ease-in-out forwards;
+        }
+
+        /* Add the fade-out animation */
+        #chatbot.fade-out {
+            animation: fade-out 1s ease-in-out backwards;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+        }
+
+        @keyframes fade-out {
+            0% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+        }
+
+        #chatbot-header {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            height: 15%;
+            width: 100%;
+            font-size: xx-large;
+            font-weight: 500px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #0a0a0a;
+            align-items: Center;
+            margin-bottom: 10px;
+        }
+
+        #chatbot-container {
+            overflow-y: scroll;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            height: 68%;
+            width: 100%;
+            background-color: white;
+            overflow-y: scroll;
+        }
+
+        /* #chatbot-container {
+            scrollbar-width: none;
+            /* hide scrollbar for Firefox */
+        /* -ms-overflow-style: none; */
+        /* hide scrollbar for IE and Edge */
+        /* } */
+
+        #chatbot-container::-webkit-scrollbar {
+            width: 0;
+            /* hide scrollbar for Chrome, Safari, and Opera */
+            height: 0;
+        }
+
+        .left,
+        .right {
+            font-size: 14px;
+            display: inline-block;
+            padding: 10px;
+            width: auto;
+            max-width: 70%;
+            margin: 8px 8px;
+            font-family: monospace;
+            word-wrap: break-word;
+            height: fit-content;
+        }
+
+        .left {
+            color: #000;
+            background: #e5e5e7;
+            border-radius: 0 16px 16px 16px;
+            font-size: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border: 1px solid white;
+        }
+
+        .right {
+            float: right;
+            color: rgb(238, 237, 237);
+            background: black;
+            border-radius: 16px 16px 0 16px;
+            font-size: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            padding-right: 50px;
+            border: 1px solid black;
+            /* add some padding on the right to make space for the timestamp */
+        }
+
+
+        .msgCon1,
+        .msgCon2,
+        .msgCon3 {
+            height: auto;
+            width: 100%;
+            display: inline-block;
+            font-size: 8px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        /* Add the fade-in animation */
+        .fade-in {
+            animation: fade-in 1s ease-in-out forwards;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+        }
+
+        #chatbot-footer {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            height: 13%;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 80% 10% 10%;
+            margin-bottom: 10px;
+        }
+
+        #send-bar {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            /* box-shadow: 0px 0px 5px #0a0a0a; */
+        }
+
+        #send-button {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            /* box-shadow: 0px 0px 5px #0a0a0a; */
+            color: black;
+        }
+
+        #send-button:hover {
+            border: 2px solid black;
+        }
+
+        #mic-button {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            /* box-shadow: 0px 0px 5px #0a0a0a; */
+            color: black;
+        }
+
+        #mic-button:hover {
+            border: 2px solid black;
+        }
+
+
+        .chatbot-message {
+            background-color: rgb(238, 237, 237);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            /* border: 1px solid rgb(71, 70, 70); */
+            /* float: left; */
+        }
+
+        .timestamp {
+            font-size: 10px;
+            color: rgb(92, 91, 91);
+        }
+
+        .dot-typing {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dot-typing>div {
+            margin: 0 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #555;
+            animation: typing 0.6s infinite;
+        }
+
+        .dot-typing>div:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .dot-typing>div:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes typing {
+            0% {
+                opacity: 0.3;
+                transform: scale(0.9);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0.3;
+                transform: scale(0.9);
+            }
+        }
+
+        .button-glow {
+            color: #057a32;
+        }
+
+        .heading {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: x-large;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="heading">
+            <h1>Hello User!! Welcome</h1>
+            <p>This website is a chatbot demo website for Alba (Aluminium Bahrain) company.</p>
+            <p>Please click the chat button that is present on the right bottom of the website to try the chatbot.</p>
+        </div>
+        <div class="row">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-8">
+                <button id="chat-btn"><i class="fa fa-comments"></i></button>
+                <div id="chatbot" class="col-sm-6 col-sm-7">
+                    <div id="chatbot-header">Chat Bot</div>
+                    <div id="chatbot-container">
+                        <div class="chatbot-message">Alba Chatbot to answer all your queries🤗</div>
+                        <div class="left">Welcome to Alba! How can I help you?</div>
+                    </div>
+                    <div id="chatbot-footer">
+                        <input id="send-bar" type="text" placeholder="Type Here..."
+                            onkeydown="if (event.keyCode === 13) document.getElementById('send-button').click()">
+                        <button id="send-button"><i class="fa fa-paper-plane"></i></button>
+                        <button id="mic-button"><i class="fa fa-microphone"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBtn = document.querySelector('#chat-btn');
+        const chatbotContainer = document.querySelector('#chatbot');
+
+        const chatButton = document.getElementById('chat-btn');
+        const chatbot = document.getElementById('chatbot');
+        const messageContainer = document.getElementById("chatbot-container");
+        const messageInput = document.getElementById("send-bar");
+        const sendButton = document.getElementById("send-button");
+        const micButton = document.getElementById("mic-button");
+
+
+
+        // to open and close chat button
+        let isChatbotOpen = false;
+        chatBtn.addEventListener('click', () => {
+            if (!isChatbotOpen) {
+                chatbotContainer.classList.add('fade-in');
+                chatbotContainer.style.display = 'block';
+            } else {
+                chatbotContainer.classList.remove('fade-in');
+                chatbotContainer.classList.add('fade-out');
+                setTimeout(() => {
+                    chatbotContainer.style.display = 'none';
+                    chatbotContainer.classList.remove('fade-out');
+                }, 500);
+            }
+            isChatbotOpen = !isChatbotOpen;
+        });
+
+        function scroll() {
+            var scrollMsg = document.getElementById('chatbot-container');
+            scrollMsg.scrollTop = scrollMsg.scrollHeight;
+        }
+
+        // Get the current time as a string in 12-hour format with AM/PM postfix
+        function getCurrentTime() {
+            const date = new Date();
+            let hours = date.getHours();
+            let minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // convert 0 to 12
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        let isRecording = false;
+        let recordedChunks = [];
+        const recognition = new window.webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        var clickCount = 0;
+        var isMicClicked = false;
+
+        micButton.addEventListener("click", async (e) => {
+            var myButton = document.getElementById("mic-button");
+
+            if (isRecording) {
+                myButton.style.color = 'black';
+                var myInput = document.getElementById("send-bar");
+                myInput.placeholder = "Type here...";
+                sendButton.classList.add("button-glow");
+                recognition.stop();
+                isRecording = false;
+                // Send the recorded audio to the server for transcription and converting the audio to text 
+                const blob = new Blob(recordedChunks, { type: "audio/webm" });
+                const formData = new FormData();
+                formData.append("audio", blob);
+                axios.post("http://localhost:3000/transcribe", formData).then(response => {
+                    const transcript = response.data.transcript;
+                    addMessage("You", transcript);
+                });
+                recordedChunks = [];
+            }
+            else {
+                recognition.start();
+                isRecording = true;
+                clickCount++;
+                if (clickCount % 2 === 1) {
+                    micButton.style.color = "#057a32";
+                    var myInput = document.getElementById("send-bar");
+                    myInput.placeholder = "I'm listening...";
+                } else {
+                    micButton.style.color = "black";
+                    var myInput = document.getElementById("send-bar");
+                    myInput.placeholder = "Type Here...";
+                    sendButton.classList.add("button-glow");
+                }
+            }
+
+            // adding the text to input area
+            recognition.onresult = event => {
+                transcript = event.results[event.results.length - 1][0].transcript;
+                messageInput.value = transcript;
+            };
+
+        });
+
+        sendButton.addEventListener("click", async (e) => {
+            sendButton.classList.remove("button-glow");
+            isMicClicked = false;
+            var userInput = document.getElementById('send-bar').value;
+
+            if (userInput == undefined || userInput == "") {
+                alert("Please enter your query!!");
+                return;
+            }
+
+
+            // Add user messages with timestamp
+            let userInputDiv = document.createElement('div');
+            let container1 = document.createElement('div');
+            container1.setAttribute("class", "msgCon1 ");
+            userInputDiv.innerHTML = `${userInput}<br><span class="timestamp">${getCurrentTime()}</span>`;
+            userInputDiv.setAttribute("class", "right");
+            container1.appendChild(userInputDiv);
+            messageContainer.appendChild(container1);
+            scroll()
+
+            let container3 = document.createElement('div');
+            container3.setAttribute("class", "msgCon3");
+            let loadingDots = document.createElement('div');
+            loadingDots.setAttribute("class", "dot-typing");
+            loadingDots.innerHTML += "<div></div><div></div><div></div>";
+            container3.appendChild(loadingDots);
+            messageContainer.appendChild(container3);
+            scroll()
+
+
+            //prompt for openai
+            const prompt = `The following is a conversation with an AI assistant. \nThe assistant is helpful, creative, clever, very professional and very friendly. \nThe assistant only answers to the below questions and answers only the content given below. If anything else other than prompt content is asked, say \"Sorry, I can't understand what you are saying. Please repeat your query or visit  https://www.albasmelter.com/en/category/contact for more asssitance\"\n\nHuman: what is your company about?\nAI: Alba or Aluminium Bahrain is one of the world’s largest aluminium smelters .\nOur diverse product portfolio of Standard and Value-Added Products (VAP)s are exported to more than 240 global customers through its sales offices in Europe (Zurich), Asia (Singapore) and subsidiary office in the U.S. \nTo know more, visit https://www.albasmelter.com/en/\n\nHuman: What products do you sell? \nHuman: What are you selling?\nAI: We are majorly an Aluminium smelter company. We sell products like:\\n\n            1.Standard ingots\n            2.T-ingots\n            3.Rolling ingots and \n            4.Properzi ingots \n            5.Other products we also sell: Calcined coke, Anode, Power and Water to gulf regions. \nTo know more details about products, visit https://www.albasmelter.com/en/ and go to products tab.\n\nHuman: What kind of aluminum products do you supply? \nAI: We are majorly an Aluminium smelter company. We sell products like:\\n\n            1.Standard ingots\n            2.T-ingots\n            3.Rolling ingots and \n            4.Properzi ingots \nTo know more details about products, visit https://www.albasmelter.com/en/ and go to products tab.\n\nHuman: What services do you offer?\nAI: We offer a lot of services that include:\n            1.Aluminium Products\n            2.Products like Anode,Power etc \n            3.Production Process\n            4.Customer Support \n            5.Innovation and Quality Control\n            6.Markets\n            7.Logistics\n            8.Contact Sales. \nTo know more details about products, visit https://www.albasmelter.com/en/ and go to products tab.\n\nHuman: Tell me about your Investor relations.\nAI: visit https://www.albasmelter.com/en/ and go to Investor relations tab.\n\nHuman: Contact\nAI: You can either call to one of the below numbers:\n        (+973) 1783 0000\n        (+973) 1783 0083\nor mail us at info@alba.com.bh.\n\nHuman: Do you have certifications? \nAI: Visit https://www.albasmelter.com/en/category/innovation-and-quality-control to know about our certifications.\n\nHuman: When was Alba incorporated?\nAI: Alba was incorporated by Charter in 1968, and officially started its commercial operations in 1971 as a 120,000 metric tonnes per annum (mtpa) smelter.\n\nHuman: When did Alba go public?\nAI: Alba went public on 30 November 2010.\n\nHuman: On what Stock Exchanges are Alba shares traded?\nAI: Alba shares are listed on two exchanges: Ordinary Shares on the Bahrain Bourse and Global Depository Receipts (GDRs) on the London Stock Exchange – Alternative Investment Market (AIM).\n\nHuman: Do you have a customer service department that I can contact if I have any questions or concerns about my order?\nAI: Yes! You can visit https://www.albasmelter.com/en/category/contact for your queries.\n\nHuman: What is the quality of your products?\nAI: We provide best in class products with our own quality control that relies on resources such as optical microscopy as well as a fully equipped Scanning Electron Microscope (SEM), the only one of its kind in Bahrain.\nTo know more visit: https://www.albasmelter.com/en/category/innovation-and-quality-control\n\nHuman: How can I place an order with your company?\nHuman: What are your shipping and delivery options?\nHuman: Do you offer international shipping?\nHuman: What is your return policy?\nHuman: How can I track my order?\nHuman: Do you offer any warranties or guarantees on your products?\nHuman: Can I cancel my order once it has been placed?\nHuman: Can you help me with a technical issue?\nAI: For enquiry regarding this query, Please call us at  (+973) 1783 0000 or (+973) 1783 0083.\nPlease visit https://www.albasmelter.com/en/category/contact for more details.\n\nHuman: How do I buy/sell Alba stock?\nAI: Any potential (new) investor can buy Alba shares by either opening an account as an individual (retailer) or as an institutional investor by filling the Opening Account Form then choosing a broker. The full list of brokers is available on Bahrain Bourse website. Once the account is established, an investor can buy/or sell through the broker.\n\nHuman: What is the Company registered address?\nAI: Building 150, Road 94, Block 951, Askar, King Hamad Highway.\n\nHuman: Where can I find you? \nAI: You can find us on social media on account name of alba.\n\nHuman: Where are you?\nAI: Our company is in Kingdom of Bahrain.\n\nHuman: what are you?\nAI: I am an AI created for Alba. How can I help you today?\n\nHuman: Hello, who are you? \nHuman: Hi, who are you? \nHuman: who are you? \nAI: I am an AI created for Alba. How can I help you today?\n\nHuman: what are you?\nAI: I am an AI created for Alba. How can I help you today?\n\nHuman: Hi\nHuman: Hello\nAI: Hello! Welcome to Alba. How can I assist you today?\nHuman: Hi\nAI: Hello! Welcome to Alba. How can I assist you today?\nHuman: Hello\nAI: Hello! Welcome to Alba. How can I assist you today?\nHuman: Hi,who are you?\nAI: I am an AI created for Alba. How can I help you today?\nHuman: who are you?\nAI: I am an AI created for Alba. How can I help you today?\nHuman: how can i contact you? \nAI: You can either call to one of the below numbers:\n        (+973) 1783 0000\n        (+973) 1783 0083\nor mail us at info@alba.com.bh.\n\nHuman: ${userInput}\nAI:`;
+
+            const temperature = 0.9;
+            const frequency = 0;
+            const presence = 0.6;
+
+            async function generateResponse(prompt, temperature, frequency, presence) {
+                const apiUrl = 'https://api.openai.com/v1/engines/text-davinci-003/completions';
+                const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer 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' };
+                const data = { prompt: prompt, temperature: temperature, frequency_penalty: frequency, presence_penalty: presence, max_tokens: 1024 };
+                const response = await axios.post(apiUrl, data, { headers });
+                return response.data.choices[0].text;
+            }
+            const response = await generateResponse(prompt, temperature, frequency, presence);
+            console.log(response);
+
+            // Replace line breaks with HTML <br> tags
+            const formattedResponse = response.replace(/\n/g, '<br>');
+
+            // Wrap bulleted points in HTML <ul> and <li> tags
+            const bulletedResponse = formattedResponse.replace(/\n\*/g, '<ul><li>').replace(/\n/g, '</li><li>') + '</li></ul>';
+
+            // Simulate AI response delay (replace with actual response handling)
+            setTimeout(() => {
+                // Remove loading dots
+                loadingDots.remove();
+
+                // Add AI responses with timestamp
+                let responseDiv = document.createElement('div');
+                let container2 = document.createElement('div');
+                container2.setAttribute("class", "msgCon2");
+                responseDiv.innerHTML = `${bulletedResponse}<br><span class="timestamp">${getCurrentTime()}</span>`;
+                responseDiv.setAttribute("class", "left");
+                container2.appendChild(responseDiv);
+                messageContainer.appendChild(container2);
+                document.getElementById('send-bar').value = "";
+                scroll();
+            }, 2000);
+        });
+
+
+    </script>
+
+</body>
+
+</html>

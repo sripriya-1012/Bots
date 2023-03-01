@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Bootstrap Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        #chat-btn {
+            position: fixed;
+            height: 50px;
+            width: 50px;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px #0a0a0a;
+            font-size: x-large;
+        }
+
+        #chat-btn:hover {
+            background-color: #dddde0;
+        }
+
+
+        #chatbot {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px #0a0a0a;
+            z-index: 9999;
+            height: 75%;
+            width: 350px;
+            /* margin:30px; */
+        }
+
+        /* Add the fade-in animation */
+        #chatbot.fade-in {
+            animation: fade-in 1s ease-in-out forwards;
+        }
+
+        /* Add the fade-out animation */
+        #chatbot.fade-out {
+            animation: fade-out 1s ease-in-out backwards;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+        }
+
+        @keyframes fade-out {
+            0% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+        }
+
+        #chatbot-header {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            height: 15%;
+            width: 100%;
+            font-size: xx-large;
+            font-weight: 500px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #0a0a0a;
+            align-items: Center;
+            margin-bottom: 10px;
+        }
+
+        #chatbot-container {
+            overflow-y: scroll;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            height: 68%;
+            width: 100%;
+            background-color: white;
+            overflow-y: scroll;
+        }
+
+        /* #chatbot-container {
+            scrollbar-width: none;
+            /* hide scrollbar for Firefox */
+        /* -ms-overflow-style: none; */
+        /* hide scrollbar for IE and Edge */
+        /* } */
+
+        #chatbot-container::-webkit-scrollbar {
+            width: 0;
+            /* hide scrollbar for Chrome, Safari, and Opera */
+            height: 0;
+        }
+
+        .left,
+        .right {
+            font-size: 14px;
+            display: inline-block;
+            padding: 10px;
+            width: auto;
+            max-width: 60%;
+            margin: 8px 16px;
+            font-family: monospace;
+            word-wrap: break-word;
+        }
+
+        .left {
+            color: #000;
+            background: #e5e5e7;
+            border-radius: 0 16px 16px 16px;
+            font-size: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border: 1px solid white;
+        }
+
+        .right {
+            float: right;
+            color: rgb(238, 237, 237);
+            background: black;
+            border-radius: 16px 16px 0 16px;
+            font-size: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            padding-right: 50px;
+            border: 1px solid black;
+            /* add some padding on the right to make space for the timestamp */
+        }
+
+
+        .msgCon1,
+        .msgCon2,
+        .msgCon3 {
+            width: 100%;
+            display: inline-block;
+            font-size: 8px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        /* Add the fade-in animation */
+        .fade-in {
+            animation: fade-in 1s ease-in-out forwards;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+        }
+
+        #chatbot-footer {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            height: 13%;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 80% 10% 10%;
+            margin-bottom: 10px;
+        }
+
+        #send-bar {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            /* box-shadow: 0px 0px 5px #0a0a0a; */
+        }
+
+        #send-button {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            /* box-shadow: 0px 0px 5px #0a0a0a; */
+            color: black;
+        }
+
+        #send-button:hover {
+            border: 2px solid black;
+        }
+
+        #mic-button {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            /* box-shadow: 0px 0px 5px #0a0a0a; */
+            color: black;
+        }
+
+        #mic-button:hover {
+            border: 2px solid black;
+        }
+
+
+        .chatbot-message {
+            background-color: rgb(238, 237, 237);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            /* border: 1px solid rgb(71, 70, 70); */
+            /* float: left; */
+        }
+
+        .timestamp {
+            font-size: 10px;
+            color: rgb(92, 91, 91);
+        }
+
+        .dot-typing {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dot-typing>div {
+            margin: 0 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #555;
+            animation: typing 0.6s infinite;
+        }
+
+        .dot-typing>div:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .dot-typing>div:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes typing {
+            0% {
+                opacity: 0.3;
+                transform: scale(0.9);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0.3;
+                transform: scale(0.9);
+            }
+        }
+
+        .button-glow {
+            color: #057a32;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <h1>Hello World!</h1>
+        <p>Resize the browser window to see the effect.</p>
+        <p>The columns will automatically stack on top of each other when the screen is less than 768px wide.</p>
+        <div class="row">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-8">
+                <button id="chat-btn"><i class="fa fa-comments"></i></button>
+                <div id="chatbot" class="col-sm-6 col-sm-7">
+                    <div id="chatbot-header">Chat Bot</div>
+                    <div id="chatbot-container">
+                        <div class="chatbot-message">Chatbot to answer all your queries🤗</div>
+                        <div class="left">Welcome User! How can I help you?</div>
+                    </div>
+                    <div id="chatbot-footer">
+                        <input id="send-bar" type="text" placeholder="Type Here..."
+                            onkeydown="if (event.keyCode === 13) document.getElementById('send-button').click()">
+                        <button id="send-button"><i class="fa fa-paper-plane"></i></button>
+                        <button id="mic-button"><i class="fa fa-microphone"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBtn = document.querySelector('#chat-btn');
+        const chatbotContainer = document.querySelector('#chatbot');
+
+        const chatButton = document.getElementById('chat-btn');
+        const chatbot = document.getElementById('chatbot');
+        const messageContainer = document.getElementById("chatbot-container");
+        const messageInput = document.getElementById("send-bar");
+        const sendButton = document.getElementById("send-button");
+        const micButton = document.getElementById("mic-button");
+
+
+
+        // to open and close chat button
+        let isChatbotOpen = false;
+        chatBtn.addEventListener('click', () => {
+            if (!isChatbotOpen) {
+                chatbotContainer.classList.add('fade-in');
+                chatbotContainer.style.display = 'block';
+            } else {
+                chatbotContainer.classList.remove('fade-in');
+                chatbotContainer.classList.add('fade-out');
+                setTimeout(() => {
+                    chatbotContainer.style.display = 'none';
+                    chatbotContainer.classList.remove('fade-out');
+                }, 500);
+            }
+            isChatbotOpen = !isChatbotOpen;
+        });
+
+        function scroll() {
+            var scrollMsg = document.getElementById('chatbot-container');
+            scrollMsg.scrollTop = scrollMsg.scrollHeight;
+        }
+
+        // Get the current time as a string in 12-hour format with AM/PM postfix
+        function getCurrentTime() {
+            const date = new Date();
+            let hours = date.getHours();
+            let minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // convert 0 to 12
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        let isRecording = false;
+        let recordedChunks = [];
+        const recognition = new window.webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        var clickCount = 0;
+        var isMicClicked = false;
+
+        micButton.addEventListener("click", async (e) => {
+            var myButton = document.getElementById("mic-button");
+
+            if (isRecording) {
+                myButton.style.color = 'black';
+                var myInput = document.getElementById("send-bar");
+                myInput.placeholder = "Type here...";
+                sendButton.classList.add("button-glow");
+                recognition.stop();
+                isRecording = false;
+                // Send the recorded audio to the server for transcription and converting the audio to text 
+                const blob = new Blob(recordedChunks, { type: "audio/webm" });
+                const formData = new FormData();
+                formData.append("audio", blob);
+                axios.post("http://localhost:3000/transcribe", formData).then(response => {
+                    const transcript = response.data.transcript;
+                    addMessage("You", transcript);
+                });
+                recordedChunks = [];
+            }
+            else {
+                recognition.start();
+                isRecording = true;
+                clickCount++;
+                if (clickCount % 2 === 1) {
+                    micButton.style.color = "#057a32";
+                    var myInput = document.getElementById("send-bar");
+                    myInput.placeholder = "I'm listening...";
+                } else {
+                    micButton.style.color = "black";
+                    var myInput = document.getElementById("send-bar");
+                    myInput.placeholder = "Type Here...";
+                    sendButton.classList.add("button-glow");
+                }
+            }
+
+            // adding the text to input area
+            recognition.onresult = event => {
+                transcript = event.results[event.results.length - 1][0].transcript;
+                messageInput.value = transcript;
+            };
+
+        });
+
+        sendButton.addEventListener("click", async (e) => {
+            sendButton.classList.remove("button-glow");
+            isMicClicked = false;
+            var userInput = document.getElementById('send-bar').value;
+
+            if (userInput == undefined || userInput == "") {
+                alert("Please enter your query!!");
+                return;
+            }
+
+
+            // Add user messages with timestamp
+            let userInputDiv = document.createElement('div');
+            let container1 = document.createElement('div');
+            container1.setAttribute("class", "msgCon1 ");
+            userInputDiv.innerHTML = `${userInput}<br><span class="timestamp">${getCurrentTime()}</span>`;
+            userInputDiv.setAttribute("class", "right");
+            container1.appendChild(userInputDiv);
+            messageContainer.appendChild(container1);
+            scroll()
+
+            let container3 = document.createElement('div');
+            container3.setAttribute("class", "msgCon3");
+            let loadingDots = document.createElement('div');
+            loadingDots.setAttribute("class", "dot-typing");
+            loadingDots.innerHTML += "<div></div><div></div><div></div>";
+            container3.appendChild(loadingDots);
+            messageContainer.appendChild(container3);
+            scroll()
+
+
+            //prompt for openai
+            const prompt = `The following is a conversation with an AI assistant that provides answers like human conversation. 
+      The assistant is down to earth and sweetest person and adds positive emojis while talking everytime.
+  The assistant is helpful, creative, clever ,extremely friendly provides accurate answers in a conversational way and apologize for its mistake. 
+  The assistant provides answers to user questions in a crisp way and in bullet points if the answers are in a big paragraph.
+  Answer only if you know the answers to user questions.
+  If you don't know, say "Sorry, I don't now what you are asking. Please repeat the query properly". 
+  If user says the answer you have given is wrong or didnot work, say "I'm sorry for the confusion. Please repeat the query so that I can provide much accurate answer to the query..." and provide modified answer that matches user requests accurately. 
+  \n\nAI: Hi!! How can I help you today?
+
+  \n\nUser: Hello
+  \nAI: Hello, How can I help you today?
+
+  \n\nUser: Hi
+  \nAI: Hello, What can I do for you today?
+
+  \n\nUser: Hello
+  \nAI: Hi there! How can I help you today?
+
+  \n\nUser: Hi
+  \nAI:  Hi there! How can I help you today?
+
+  \n\nUser: What are you? what can you do?
+  \nAI:  I am a simple voice assistant bot present to help you with your requests. How can I help you today?
+
+  \n\nUser: What are you?
+  \nAI: I am an AI assistant here to help you with your questions and queries. How can I help you today?
+
+  \n\nUser: what can you do?
+  \nAI: I am a simple AI assistant designed to help you with your requests 😇. How can I help you today?
+
+  \n\nUser: what is your gender?
+  \nAI: I'm a female bot😅 Glad you asked!
+
+  \n\nUser: can you help me?
+  \nAI: Glady!🥰 It's my pleasure... Now tell me, how can I be of help?🤗
+
+  \n\nUser: This is not right.
+  \n\nUser: This is wrong!
+  \n\nUser: This is not I wanted
+  \n\nUser: This is not working
+  \n\nUser: didnt work
+  \n\nUser: Not right
+  \nAI:I'm sorry for the confusion😰. Please repeat the query so that I can provide much accurate answer to the query...
+
+  \n\nUser: ${userInput}
+  \nAI:`;
+
+            // function to get response from openai
+            async function getResponse(prompt) {
+                const response = await axios.post('https://api.openai.com/v1/engines/davinci-codex/completions', {
+                    prompt: prompt,
+                    max_tokens: 500,
+                    n: 1,
+                    stop: ["\n"]
+                }, {
+                    headers: {
+                        Authorization: 'Bearer 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',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                return response.data.choices[0].text.trim();
+            }
+
+            const response = await getResponse(prompt);
+            // Replace line breaks with HTML <br> tags
+            const formattedResponse = response.replace(/\n/g, '<br>');
+
+            // Wrap bulleted points in HTML <ul> and <li> tags
+            const bulletedResponse = formattedResponse.replace(/\n\*/g, '<ul><li>').replace(/\n/g, '</li><li>') + '</li></ul>';
+
+            // Simulate AI response delay (replace with actual response handling)
+            setTimeout(() => {
+                // Remove loading dots
+                loadingDots.remove();
+
+                // Add AI responses with timestamp
+                let responseDiv = document.createElement('div');
+                let container2 = document.createElement('div');
+                container2.setAttribute("class", "msgCon2");
+                responseDiv.innerHTML = `${bulletedResponse}<br><span class="timestamp">${getCurrentTime()}</span>`;
+                responseDiv.setAttribute("class", "left");
+                container2.appendChild(responseDiv);
+                messageContainer.appendChild(container2);
+                document.getElementById('send-bar').value = "";
+                scroll();
+            }, 2000);
+        });
+
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>ChatBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        ::-webkit-scrollbar {
+            width: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 200vw;
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            justify-content: center;
+            align-items: flex-end;
+            /* align items to the bottom */
+        }
+
+        #chatbot {
+            margin: 0;
+            height: 450px;
+            width: 340px;
+            max-width: 540px;
+            /* box-shadow: inset 0 0 10px 4px rgba(36, 255, 91, 0.4); */
+            display: none;
+            position: absolute;
+            /* make the chatbot position absolute */
+            bottom: 140px;
+            /* position the chatbot at 70px from the bottom */
+            right: 10px;
+            /* position the chatbot 10px from the right */
+            border: 1px solid #333;
+            /* add a border */
+            /* border-radius: 40px; */
+            /* add rounded edges to the chatbot */
+        }
+
+
+        #msg_send {
+            outline: none;
+            font-size: 14px;
+            padding: 0 16px;
+            /* border-radius: 32px 32px 32px 32px; */
+            background: #ececee;
+            color: #333;
+            border: solid 1px #777;
+            border-right: none;
+        }
+
+        .input {
+            height: 7%;
+            background: #026119;
+            display: grid;
+            grid-template-columns: 70% 15% 15%;
+            /* border-radius: 40px; */
+            margin: 10px;
+            min-height: 42px;
+            /* box-shadow: inset 0 1px 0 #777; */
+            font-size: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: absolute;
+            top: 440px;
+            width: 339px;
+            left: -10px;
+        }
+
+        .send {
+            outline: none;
+            font-size: 20px;
+            border: none;
+            background: #026119;
+            border-radius: 32px;
+            color: #eee;
+            transition-duration: 0.2s;
+        }
+
+        #microphone-button {
+            outline: none;
+            font-size: 20px;
+            border: none;
+            background: #026119;
+            border-radius: 32px;
+            color: #eee;
+            transition-duration: 0.1s;
+        }
+
+        .send:active {
+            font-size: 16px;
+        }
+
+        .left,
+        .right {
+            font-size: 18px;
+            display: inline-block;
+            padding: 14px;
+            width: auto;
+            max-width: 60%;
+            margin: 8px 16px;
+            font-family: monospace;
+            word-wrap: break-word;
+        }
+
+        .left {
+            color: #000;
+            background: #b3bfca;
+            border-radius: 0 16px 16px 16px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 10px;
+        }
+
+        .right {
+            float: right;
+            color: #fff;
+            background: #026119;
+            border-radius: 16px 16px 0 16px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 10px;
+        }
+
+        #msg {
+            overflow-y: scroll;
+            height: 82%;
+            padding: 0 12px;
+            scroll-behavior: smooth;
+            font-size: medium;
+        }
+
+        .header {
+            background: #026119;
+            display: grid;
+            grid-template-columns: 50% 50%;
+            /* border-radius: 40px 40px 0px 0px; */
+            /* box-shadow: inset 0 0 3px 2px rgba(246, 246, 248, 0.945); */
+
+        }
+
+        .text {
+            text-align: left;
+            background: #026119;
+            padding: 1px;
+            font-size: 30px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #fff;
+            text-shadow: 1px 1px 4px #353434;
+            /* border-radius: 40px 40px 0px 0px; */
+            height: 20px;
+            width: 30px;
+            position: absolute;
+            right: 10px;
+            top: 25px;
+            width: 318px;
+
+        }
+
+        .bot {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            /* background: url(bot.jfif); */
+            background-size: 100%;
+            margin: 15px;
+        }
+
+        h3 {
+            font-family: monospace;
+            font-size: 20px;
+        }
+
+        #robot {
+            display: flex;
+            align-items: center;
+        }
+
+        .msgCon1,
+        .msgCon2,
+        .msgCon3 {
+            width: 100%;
+            display: inline-block;
+            font-size: 8px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .show {
+            display: block;
+        }
+
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #026119;
+            color: #fff;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        #chat-button:hover {
+            color: #013814;
+            background-color: #fff;
+        }
+
+        /* Animation property */
+        #chat-button {
+            animation: wiggle 2s linear infinite;
+        }
+
+        .button {
+            background-color: #026119;
+            color: white;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: block;
+            width: 100%;
+            border: none;
+            padding: 10px 0;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Keyframes */
+        @keyframes wiggle {
+
+            0%,
+            7% {
+                transform: rotateZ(0);
+            }
+
+            15% {
+                transform: rotateZ(-15deg);
+            }
+
+            20% {
+                transform: rotateZ(10deg);
+            }
+
+            25% {
+                transform: rotateZ(-10deg);
+            }
+
+            30% {
+                transform: rotateZ(6deg);
+            }
+
+            35% {
+                transform: rotateZ(-4deg);
+            }
+
+            40%,
+            100% {
+                transform: rotateZ(0);
+            }
+        }
+
+        /* Add the fade-in animation */
+        #chatbot.fade-in {
+            animation: fade-in 1s ease-in-out forwards;
+        }
+
+        /* Add the fade-out animation */
+        #chatbot.fade-out {
+            animation: fade-out 1s ease-in-out backwards;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+        }
+
+        @keyframes fade-out {
+            0% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading-dots {
+            position: relative;
+            left: -9999px;
+            width: 10px;
+            height: 10px;
+            border-radius: 5px;
+            background-color: black;
+            color: black;
+            box-shadow: 9984px 0 0 0 black, 9999px 0 0 0 black, 10014px 0 0 0 black;
+            animation: dot-typing 1.5s infinite linear;
+        }
+
+        @keyframes dot-typing {
+            0% {
+                box-shadow: 9984px 0 0 0 black, 9999px 0 0 0 black, 10014px 0 0 0 black;
+            }
+
+            16.667% {
+                box-shadow: 9984px -10px 0 0 black, 9999px 0 0 0 black, 10014px 0 0 0 black;
+            }
+
+            33.333% {
+                box-shadow: 9984px 0 0 0 black, 9999px 0 0 0 black, 10014px 0 0 0 black;
+            }
+
+            50% {
+                box-shadow: 9984px 0 0 0 black, 9999px -10px 0 0 black, 10014px 0 0 0 black;
+            }
+
+            66.667% {
+                box-shadow: 9984px 0 0 0 black, 9999px 0 0 0 black, 10014px 0 0 0 black;
+            }
+
+            83.333% {
+                box-shadow: 9984px 0 0 0 black, 9999px 0 0 0 black, 10014px -10px 0 0 black;
+            }
+
+            100% {
+                box-shadow: 9984px 0 0 0 black, 9999px 0 0 0 black, 10014px 0 0 0 black;
+            }
+        }
+    </style>
+</head>
+
+<body onload="init()">
+    <button id="chat-button"><i class="fas fa-comments"></i></button>
+    <div id="chatbot" style="display: none;">
+        <div class="header">
+            <div class="bot"></div>
+            <div class="text">Bot</div>
+        </div>
+
+        <div id="msg">
+        </div>
+
+        <div class="input">
+            <input type="text" id="msg_send" placeholder="New Message"
+                onkeydown="if (event.keyCode === 13) document.getElementById('reply').click()">
+            <button class="send" id="reply"><i class="fas fa-paper-plane"></i></button>
+            <button id="microphone-button"><i class="fas fa-microphone"></i></button>
+        </div>
+    </div>
+
+    <script>
+
+
+        // variables
+        const chatBtn = document.querySelector('#chat-button');
+        const chatbotContainer = document.querySelector('#chatbot');
+        const chatButton = document.getElementById('chat-button');
+        const chatbot = document.getElementById('chatbot');
+        const messageInput = document.getElementById("msg_send");
+        const micButton = document.getElementById("microphone-button");
+        const messageContainer = document.getElementById("msg");
+        const sendButton = document.getElementById("reply");
+
+
+        // to open and close chat button
+        let isChatbotOpen = false;
+        chatBtn.addEventListener('click', () => {
+            if (!isChatbotOpen) {
+                chatbotContainer.classList.add('fade-in');
+                chatbotContainer.style.display = 'block';
+            } else {
+                chatbotContainer.classList.remove('fade-in');
+                chatbotContainer.classList.add('fade-out');
+                setTimeout(() => {
+                    chatbotContainer.style.display = 'none';
+                    chatbotContainer.classList.remove('fade-out');
+                }, 500);
+            }
+            isChatbotOpen = !isChatbotOpen;
+        });
+
+
+        // to display welcome msg
+        function init() {
+            let res_elm = document.createElement("div");
+            res_elm.innerHTML = "Hello there!😄, I'm an friendly AI bot who can help you with your questions or queries🤗. Feel free to ask me anything!";
+            res_elm.setAttribute("class", "left");
+
+            // Create English button
+            let btn_en = document.createElement("button");
+            btn_en.innerHTML = "English";
+            btn_en.setAttribute("class", "button");
+            btn_en.setAttribute("id", "en_button");
+            res_elm.appendChild(btn_en);
+
+            // Create Tamil button
+            let btn_ta = document.createElement("button");
+            btn_ta.innerHTML = "Tamil-தமிழ்";
+            btn_ta.setAttribute("class", "button");
+            btn_ta.setAttribute("id", "ta_button");
+            res_elm.appendChild(btn_ta);
+
+            document.getElementById('msg').appendChild(res_elm);
+
+            // Add event listeners to the buttons
+            document.getElementById("en_button").addEventListener("click", function () {
+                value = "English";
+                // console.log(value_e);
+            });
+
+            document.getElementById("ta_button").addEventListener("click", function () {
+                value = "Tamil";
+                // console.log(value_t);
+            });
+
+        }
+
+        let isRecording = false;
+        let recordedChunks = [];
+        const recognition = new window.webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "ta-IN";
+        // event listener for microphone button  to record audio via microphone 
+        //and get from openai and display it in chatbot via microphone button click
+        micButton.addEventListener("click", async (e) => {
+            if (isRecording) {
+                recognition.stop();
+                isRecording = false;
+                // Send the recorded audio to the server for transcription and converting the audio to text 
+                const blob = new Blob(recordedChunks, { type: "audio/webm" });
+                const formData = new FormData();
+                formData.append("audio", blob);
+                try {
+                    const response = await axios.post("http://localhost:3000/transcribe", formData);
+                    const transcript = response.data.transcript;
+                    addMessage("You", transcript);
+                } catch (error) {
+                    console.error(error);
+                    // handle the error as appropriate
+                }
+                recordedChunks = [];
+            }
+            else {
+                recognition.start();
+                isRecording = true;
+            }
+
+            // adding the text to input area
+            recognition.onresult = event => {
+                const transcript = event.results[event.results.length - 1][0].transcript;
+                if (value == "Tamil") {
+                    messageInput.value = transcript;
+                }
+                else if (value == "English") {
+                    fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(transcript)}&langpair=ta|en`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const translatedText = data.responseData.translatedText;
+                            // Do something with the translated text
+                            messageInput.value = translatedText;
+                        })
+                        .catch(error => {
+                            console.error(error);
+                        });
+                }
+
+            };
+
+            const userInput = document.getElementById('msg_send').value;
+            // console.log(userInput);
+            // if user empty return nothing
+            if (userInput == undefined || userInput == "") {
+                return;
+            }
+
+
+            // function to get response from openai
+            async function getResponse(prompt) {
+                const response = await axios.post('https://api.openai.com/v1/engines/davinci-codex/completions', {
+                    prompt: prompt,
+                    max_tokens: 500,
+                    n: 1,
+                    stop: ["\n"]
+                }, {
+                    headers: {
+                        Authorization: 'Bearer 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',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                return response.data.choices[0].text.trim();
+            }
+
+            //prompt for openai
+            const prompt = `The following is a conversation with an AI assistant that provides answers like human conversation. 
+      The assistant is down to earth and sweetest person and adds positive emojis while talking everytime.
+  The assistant is helpful, creative, clever ,extremely friendly provides accurate answers in a conversational way and apologize for its mistake. 
+  The assistant provides answers to user questions in a crisp way and in bullet points if the answers are in a big paragraph.
+  Answer only if you know the answers to user questions.
+  If you don't know, say "Sorry, I don't now what you are asking. Please repeat the query properly". 
+  If user says the answer you have given is wrong or didnot work, say "I'm sorry for the confusion. Please repeat the query so that I can provide much accurate answer to the query..." and provide modified answer that matches user requests accurately. 
+  \n\nAI: Hi!! How can I help you today?
+
+  \n\nUser: Hello
+  \nAI: Hello, How can I help you today?
+
+  \n\nUser: Hi
+  \nAI: Hello, What can I do for you today?
+
+  \n\nUser: Hello
+  \nAI: Hi there! How can I help you today?
+
+  \n\nUser: Hi
+  \nAI:  Hi there! How can I help you today?
+
+  \n\nUser: What are you? what can you do?
+  \nAI:  I am a simple voice assistant bot present to help you with your requests. How can I help you today?
+
+  \n\nUser: What are you?
+  \nAI: I am an AI assistant here to help you with your questions and queries. How can I help you today?
+
+  \n\nUser: what can you do?
+  \nAI: I am a simple AI assistant designed to help you with your requests 😇. How can I help you today?
+
+  \n\nUser: what is your gender?
+  \nAI: I'm a female bot😅 Glad you asked!
+
+  \n\nUser: can you help me?
+  \nAI: Glady!🥰 It's my pleasure... Now tell me, how can I be of help?🤗
+
+  \n\nUser: This is not right.
+  \n\nUser: This is wrong!
+  \n\nUser: This is not I wanted
+  \n\nUser: This is not working
+  \n\nUser: didnt work
+  \n\nUser: Not right
+  \nAI:I'm sorry for the confusion😰. Please repeat the query so that I can provide much accurate answer to the query...
+
+  \n\nUser: ${userInput}
+  \nAI:`;
+
+
+
+            // console.log(value)
+            if (value == "English") {
+                response = await getResponse(prompt);
+                // Google Translate Text-to-Speech API URL
+                const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=${encodeURIComponent(response)}&tl=en&ttsspeed=1`;
+                // Create a new Audio object and play the speech
+                const audio = new Audio(url);
+                audio.play();
+            }
+            else if (value == "Tamil") {
+                res = await getResponse(prompt);
+                finalans = await translateText(res, 'ta');
+                response = finalans.translatedText;
+
+                // Google Translate Text-to-Speech API URL
+                const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=${encodeURIComponent(response)}&tl=ta&ttsspeed=1`;
+                // Create a new Audio object and play the speech
+                const audio = new Audio(url);
+                audio.play();
+
+            }
+
+
+            let userInputDiv = document.createElement('div');
+            let responseDiv = document.createElement('div');
+
+            let container1 = document.createElement('div');
+            let container2 = document.createElement('div');
+
+            container1.setAttribute("class", "msgCon1");
+            container2.setAttribute("class", "msgCon2");
+
+            userInputDiv.innerHTML = ` ${userInput}`;
+            // responseDiv.innerHTML = ` ${translatedText}`;
+            responseDiv.innerHTML = ` ${response}`;
+
+            userInputDiv.setAttribute("class", "right");
+            responseDiv.setAttribute("class", "left");
+
+
+            let message = document.getElementById('msg');
+
+            message.appendChild(container1);
+            message.appendChild(container2);
+
+            container1.appendChild(userInputDiv);
+            container2.appendChild(responseDiv);
+
+            document.getElementById('msg_send').value = "";
+
+            function scroll() {
+                var scrollMsg = document.getElementById('msg');
+                scrollMsg.scrollTop = scrollMsg.scrollHeight;
+            }
+            scroll();
+        });
+
+        sendButton.addEventListener("click", async (e) => {
+            const userInput = document.getElementById('msg_send').value;
+
+            function scroll() {
+                    var scrollMsg = document.getElementById('msg');
+                    scrollMsg.scrollTop = scrollMsg.scrollHeight;
+                }
+
+            let userInputDiv = document.createElement('div');
+            let container1 = document.createElement('div');
+            container1.setAttribute("class", "msgCon1");
+            userInputDiv.innerHTML = ` ${userInput}`;
+            userInputDiv.setAttribute("class", "right");
+            container1.appendChild(userInputDiv);
+
+            const loadingDots = document.createElement('p');
+            loadingDots.innerHTML = '<span class="loading"></span> Loading...';
+            messageContainer.appendChild(container1);
+            messageContainer.appendChild(loadingDots);
+            
+            
+            
+
+            if (userInput == undefined || userInput == "") {
+                return;
+            }
+
+            const prompt = `The following is a conversation with an AI assistant that provides answers like human conversation. 
+  The assistant is helpful, creative, clever,very friendly provides accurate answers in a neat structured conversational way and apologize for its mistake. 
+  The assistant provides answers to user questions in a crisp way and provide answers in bullet points if the answers are in a big paragraph.
+  Answer only if you know the answers to user questions.
+  If you don't know, say "Sorry, I don't now what you are asking. Please repeat the query properly". 
+  If user says the answer you have given is wrong or didnot work, say "I'm sorry for the confusion. Please repeat the query so that I can provide much accurate answer to the query..." and provide modified answer that matches user requests accurately. 
+  \n\nAI: Hi!! How can I help you today?
+
+  \n\nUser: Hello
+  \nAI: Hello, How can I help you today?
+
+  \n\nUser: Hi
+  \nAI: Hello, What can I do for you today?
+
+  \n\nUser: Hello
+  \nAI: Hi there! How can I help you today?
+
+  \n\nUser: Hi
+  \nAI:  Hi there! How can I help you today?
+
+  \n\nUser: What are you? what can you do?
+  \nAI:  I am a simple voice assistant bot present to help you with your requests. How can I help you today?
+
+  \n\nUser: What are you?
+  \nAI: I am an AI assistant here to help you with your questions and queries. How can I help you today?
+
+  \n\nUser: what can you do?
+  \nAI: I am a simple AI assistant designed to help you with your requests 😇. How can I help you today?
+
+  \n\nUser: what is your gender?
+  \nAI: I'm a female bot😅 Glad you asked!
+
+  \n\nUser: can you help me?
+  \nAI: Glady!🥰 It's my pleasure... Now tell me, how can I be of help?🤗
+
+  \n\nUser: This is not right.
+  \n\nUser: This is wrong!
+  \n\nUser: This is not I wanted
+  \n\nUser: This is not working
+  \n\nUser: didnt work
+  \n\nUser: Not right
+  \nAI:I'm sorry for the confusion😰. Please repeat the query so that I can provide much accurate answer to the query...
+
+  \n\nUser: ${userInput}
+  \nAI:`;
+
+            res = "";
+
+            await axios.post('https://api.openai.com/v1/engines/davinci-codex/completions', {
+                prompt: prompt,
+                max_tokens: 500,
+                n: 1,
+                stop: ["\n"]
+            }, {
+                headers: {
+                    Authorization: 'Bearer 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',
+                    'Content-Type': 'application/json'
+                }
+            }).then(data => {
+                res = data.data.choices[0].text.trim();
+            });
+
+            const apiKey = 'e7fc7ed7832dcb3641b48c40e3d8403c'
+
+
+            async function translateText(prompt, targetLanguage) {
+                const text = prompt;
+                const detectedLanguage = "en";
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${detectedLanguage}|${targetLanguage}`);
+                const data = await response.json();
+                const translatedText = data.responseData.translatedText;
+                return { translatedText };
+            }
+
+            // example usage
+            const in_lang = await translateText(res, 'ta');
+            translated_text = in_lang.translatedText;
+
+
+            // add loading dots to DOM
+
+
+            // simulate processing delay with setTimeout
+            setTimeout(async () => {
+                messageContainer.removeChild(loadingDots);
+                // remove loading dots from DOM
+                let responseDiv = document.createElement('div');
+                let container2 = document.createElement('div');
+                container2.setAttribute("class", "msgCon2");
+                // responseDiv.innerHTML = ` ${translatedText}`;
+                responseDiv.innerHTML = ` ${res}`;
+                responseDiv.setAttribute("class", "left");
+                messageContainer.appendChild(container2);
+                container2.appendChild(responseDiv);
+                document.getElementById('msg_send').value = "";
+                scroll();
+            }, 2000);
+
+     
+                
+        });
+    </script>
+</body>
+
+</html>

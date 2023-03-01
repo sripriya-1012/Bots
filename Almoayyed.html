@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title> Almoayyed ChatBot demo</title>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        ::-webkit-scrollbar {
+            width: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 200vw;
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            justify-content: center;
+            align-items: flex-end;
+            background-image: url("https://thumbs.gfycat.com/AffectionateInfiniteGuernseycow-size_restricted.gif");
+            background-size: cover;
+            background-repeat: no-repeat;
+            /* align items to the bottom */
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-color: rgba(0.5, 0.5, 0.5, 0.6);
+            /* Change opacity as needed */
+        }
+
+
+        #chatbot {
+            margin: 0;
+            max-width: 540px;
+            /* box-shadow: inset 0 0 10px 4px rgba(65, 115, 252, 0.4); */
+            display: none;
+            position: absolute;
+            /* make the chatbot position absolute */
+
+            /* position the chatbot 10px from the right */
+            border: 1px solid #333;
+            background-color: white;
+            height: 60%;
+            width: 25%;
+            bottom: 25%;
+            right: 3%;
+            /* add a border */
+            /* border-radius: 40px; */
+            /* add rounded edges to the chatbot */
+        }
+
+
+        #msg_send {
+            outline: none;
+            font-size: 14px;
+            padding: 0 16px;
+            /* border-radius: 32px 32px 32px 32px; */
+            background: #ececee;
+            color: #333;
+            border: solid 1px #777;
+            border-right: none;
+        }
+
+        .input {
+            height: 7%;
+            background: rgb(0, 0, 0);
+            display: grid;
+            grid-template-columns: 70% 15% 15%;
+            /* border-radius: 40px; */
+            margin: 10px;
+            min-height: 40px;
+            box-shadow: inset 0 1px 0 #777;
+            font-size: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: absolute;
+            max-width: 540px;
+            top: 100%;
+            width: 100%;
+            right: -3%;
+        }
+
+        .send {
+            outline: none;
+            font-size: 20px;
+            border: none;
+            background: black;
+            /* border-radius: 32px; */
+            color: #eee;
+            transition-duration: 0.2s;
+        }
+
+        #microphone-button {
+            outline: none;
+            font-size: 20px;
+            border: none;
+            background: black;
+            /* border-radius: 32px; */
+            color: #eee;
+            transition-duration: 0.1s;
+        }
+
+        .send:active {
+            font-size: 16px;
+        }
+
+        .left,
+        .right {
+            font-size: 18px;
+            display: inline-block;
+            padding: 14px;
+            width: auto;
+            max-width: 60%;
+            margin: 8px 16px;
+            font-family: monospace;
+            word-wrap: break-word;
+        }
+
+        .left {
+            color: #000;
+            background: #b3bfca;
+            border-radius: 0 16px 16px 16px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .right {
+            float: right;
+            color: #fff;
+            background: black;
+            border-radius: 16px 16px 0 16px;
+            font-size: 14px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            padding-right: 50px;
+            /* add some padding on the right to make space for the timestamp */
+        }
+
+        #msg {
+            overflow-y: scroll;
+            height: 82%;
+            padding: 0 12px;
+            scroll-behavior: smooth;
+            font-size: medium;
+            background-color: white;
+        }
+
+        h2 {
+            text-align: center;
+            background: black;
+            padding: 8px;
+            font-family: sans-serif;
+            color: #fff;
+            text-shadow: 1px 1px 4px #111;
+            /* box-shadow: 0 4px 8px #000a; */
+            margin-bottom: 8px;
+        }
+
+        .bot {
+            width: 40px;
+            height: 40px;
+            background: url(https://img.freepik.com/free-icon/robot_318-81201.jpg?size=338&ext=jpg&ga=GA1.1.1848284284.1677047082&semt=robertav1);
+            background-size: 100%;
+            margin: 10px;
+        }
+
+        h3 {
+            font-family: monospace;
+            font-size: 20px;
+        }
+
+        #robot {
+            display: flex;
+            align-items: center;
+        }
+
+        .msgCon1,
+        .msgCon2 {
+            width: 100%;
+            display: inline-block;
+            font-size: 8px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .show {
+            display: block;
+        }
+
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #f1f2f8;
+            color: black;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+
+
+        /* Add the fade-in animation */
+        #chatbot.fade-in {
+            animation: fade-in 1s ease-in-out forwards;
+        }
+
+        /* Add the fade-out animation */
+        #chatbot.fade-out {
+            animation: fade-out 1s ease-in-out backwards;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+        }
+
+        @keyframes fade-out {
+            0% {
+                opacity: 1;
+                transform: translateY(0%);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+        }
+
+
+        #main-heading {
+            text-align: center;
+            position: absolute;
+            font-size: xx-large;
+            font-family: monospace;
+            color: white;
+            left: 100px;
+            top: 100px;
+        }
+
+        .button-glow {
+            color: #06d154;
+        }
+
+        @media only screen and (min-width: 1px) and (max-width: 1024px) {
+            #chatbot {
+                height: 60%;
+                width: 30%;
+                bottom: 40%;
+                right: 3%;
+            }
+
+            .input {
+                height: 10%;
+                top: 100%;
+                width: 100%;
+                right: -3%;
+            }
+        }
+    </style>
+</head>
+
+<body onload="init()" b>
+    <div id="main-heading">
+        <h1>This is a demo webpage for ChatBot</h1>
+        Please click the chat button on the right corner of the webpage to
+        have a
+        chat with the bot!
+    </div>
+    <button id="chat-button"><i class="fas fa-comments"></i></button>
+    <div id="chatbot" style="display: none;">
+        <h2>ChatBOT</h2>
+        <div id="msg">
+            <div id="robot">
+                <div class="bot"></div>
+                <h4>Ask me anything!!</h4>
+            </div>
+        </div>
+        <div class="input">
+            <input type="text" id="msg_send" placeholder="New Message"
+                onkeydown="if (event.keyCode === 13) document.getElementById('reply').click()">
+            <button class="send" id="reply"><i class="fas fa-paper-plane"></i></button>
+            <button id="microphone-button"><i class="fas fa-microphone"></i></button>
+        </div>
+    </div>
+
+
+    <script>
+        const chatBtn = document.querySelector('#chat-button');
+        const chatbotContainer = document.querySelector('#chatbot');
+        const chatButton = document.getElementById('chat-button');
+        const chatbot = document.getElementById('chatbot');
+        const messageInput = document.getElementById("msg_send");
+        const micButton = document.getElementById("microphone-button");
+        const messageContainer = document.getElementById("msg");
+        const sendButton = document.getElementById("reply");
+
+        // to open and close chat button
+        let isChatbotOpen = false;
+        chatBtn.addEventListener('click', () => {
+            if (!isChatbotOpen) {
+                chatbotContainer.classList.add('fade-in');
+                chatbotContainer.style.display = 'block';
+            } else {
+                chatbotContainer.classList.remove('fade-in');
+                chatbotContainer.classList.add('fade-out');
+                setTimeout(() => {
+                    chatbotContainer.style.display = 'none';
+                    chatbotContainer.classList.remove('fade-out');
+                }, 500);
+            }
+            isChatbotOpen = !isChatbotOpen;
+        });
+        // to display welcome msg
+        function init() {
+            let res_elm = document.createElement("div");
+            res_elm.innerHTML = "Welcome to Almoayyed International Group. Please state your query";
+            res_elm.setAttribute("class", "left");
+            // let timestampDiv = document.createElement('div');
+            // timestampDiv.setAttribute("class", "right-timestamp");
+            // timestampDiv.innerHTML = new Date().toLocaleTimeString();
+            // res_elm.appendChild(timestampDiv)
+            document.getElementById('msg').appendChild(res_elm);
+        }
+
+        let isRecording = false;
+        let recordedChunks = [];
+        const recognition = new window.webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        var clickCount = 0;
+        var isMicClicked = false;
+
+        micButton.addEventListener("click", async (e) => {
+            var myButton = document.getElementById("microphone-button");
+
+            if (isRecording) {
+                myButton.style.color = 'white';
+                var myInput = document.getElementById("msg_send");
+                myInput.placeholder = "New Message";
+                sendButton.classList.add("button-glow");
+                recognition.stop();
+                isRecording = false;
+                // Send the recorded audio to the server for transcription and converting the audio to text 
+                const blob = new Blob(recordedChunks, { type: "audio/webm" });
+                const formData = new FormData();
+                formData.append("audio", blob);
+                axios.post("http://localhost:3000/transcribe", formData).then(response => {
+                    const transcript = response.data.transcript;
+                    addMessage("You", transcript);
+                });
+                recordedChunks = [];
+            }
+            else {
+                recognition.start();
+                isRecording = true;
+                clickCount++;
+                if (clickCount % 2 === 1) {
+                    micButton.style.color = "#06d154";
+                    var myInput = document.getElementById("msg_send");
+                    myInput.placeholder = "I'm listening...";
+                } else {
+                    micButton.style.color = "white";
+                    var myInput = document.getElementById("msg_send");
+                    myInput.placeholder = "New Message";
+                    sendButton.classList.add("button-glow");
+                }
+            }
+
+            // adding the text to input area
+            recognition.onresult = event => {
+                transcript = event.results[event.results.length - 1][0].transcript;
+                messageInput.value = transcript;
+            };
+
+        });
+
+        sendButton.addEventListener("click", async (e) => {
+            sendButton.classList.remove("button-glow");
+            isMicClicked = false;
+            var userInput = document.getElementById('msg_send').value;
+
+            if (userInput == undefined || userInput == "") {
+                return;
+            }
+
+            function scroll() {
+                var scrollMsg = document.getElementById('msg');
+                scrollMsg.scrollTop = scrollMsg.scrollHeight;
+            }
+
+            let userInputDiv = document.createElement('div');
+            let container1 = document.createElement('div');
+            container1.setAttribute("class", "msgCon1");
+            userInputDiv.innerHTML = ` ${userInput}`;
+            userInputDiv.setAttribute("class", "right");
+
+            container1.appendChild(userInputDiv);
+
+            messageContainer.appendChild(container1);
+
+            var prompt = `The following is a conversation with an AI assistant. \nThe assistant is helpful, creative, clever, and very friendly. \nAnswer only if uestions are asked about Almoayyed International Group. \nIf anything else is asked, say \"Sorry, I don't now what you are asking. Please repeat the query properly or kindly contact us at  (https://www.almoayyedintl.com/contact-us/)\". \nThe assistant answers the queries in points with numbering.\n\nAI: Welcome to Almoayyed International Group. How can I help you today!!\n\nUser: Hello\nUser: Hi\nAI: Hello, Welcome to Almoayyed International Group. How can I help you today?\n\nUser: How can I contact customer support?\nAI:  you can make a call to (+973 1770 0777)  or mail us to (info@almoayyedintl.com). for more details go to - (https://www.almoayyedintl.com/contact-us/)\n\nUser: Are there any discounts available? what are the available payments methods? \nAI:  You can contact us here for this query (https://www.almoayyedintl.com/contact-us)\n\nUser: Where are your company branches?\nAI:  We have 3 branches at KSA, Oman and UAE. To know about the companies present there please visit us at https://www.almoayyedintl.com/international-markets/.\n\nUser: What are the groups you have?\nAI: we are a large company with many groups offering wide range of services. please contact us at https://www.almoayyedintl.com.\n\nUser: Your history?\nAI: Our story starts in 1979, when Farouk Yusuf Almoayyed launched a Bahraini-based conglomerate. To know more please visit us at https://www.almoayyedintl.com/about-us.\n\nUser: When did you start? \nUser: what is your history?\nAI: Our story starts in 1979, when Farouk Yusuf Almoayyed launched a Bahraini-based conglomerate. \nTo know more: https://www.almoayyedintl.com/about-us .\n\nUser: What are you? what can you do? \nAI:  I am a simple voice assistant bot present to help you with your requests. How can I help you today?\n\nUser: I'm new here. Can you explain about the company?\nAI:  Almoayyed International Group has set a monumental benchmark in providing solutions for businesses regionally and globally with over 41 years of experience. \nWe have diverse expertise spanning ICT, business automation, integrated engineering solutions, safety & security, solar energy solutions, printing and marketing, and more.\nTo know more, Please visit us at https://www.almoayyedintl.com/about-us .\n\nUser: What are the services that you provide?\nAI:  We provide proficient services that cover a diverse range of industries including \n1. information technology \n2.business automation\n3.integrated engineering\n4.safety and security\n5.door and equipment\n6.solar energy\n7.printing and marketing\n8.electrical and instrumentation\n9.industrial packaging\n10.F&B and \n11.real-estate management. \nTo know more about services please visit us at https://www.almoayyedintl.com/international-markets\n\nUser: Hello\nAI: Hello, Welcome to Almoayyed International Group. How can I help you today?\nHuman: Im new here. can you explain about the company?\n\nUser: Some of your achievements?\nAI:Holding years of acclaimed experience, Almoayyed International Group has delivered outstanding results over several decades in evolving businesses and helping them thrive on a global scale.\nTestimony to our high standards is our ISO 9001: 2015 Certification.\nAI: Sure! Almoayyed International Group has set a monument benchmark in providing solutions for businesses regionally and globally with over 41 years of experience.\nWe have diverse expertise spanning ICT, business automation, integrated engineering solutions, safety & security, solar energy solutions, printing and marketing, and more.\n\nUser: When did your company start? \nAI: Our company started in 1979 when Farouk Yusuf Almoayyed launched a Bahraini-based conglomerate. He provided exceptional solutions and reliable expertise for the businesses he managed, which expanded the conglomerate into a global business group.\n\nUser: What are you?\nAI: I am an AI assistant here to help you with your questions and queries about Almoayyed International Group. How can I help you today?\n\nUser: what is https://www.almoayyedintl.com/about-us/company-overview/\nAI: https://www.almoayyedintl.com/about-us/company-overview/ is the company overview page for Almoayyed International Group. It provides an insight into the history, operations, and values of our organization.\n\nUser: what are your company achieevments?\nAI: Our company has achieved a number of milestones throughout its existence. Almoayyed International Group is ISO 9001:2015 Certified, and we have provided outstanding results over several decades in evolving businesses and helping them thrive on a global scale. We have also helped numerous Bahraini organisations to benefit from the latest digital technologies, thus enhancing their competitive edge\n\nUser: what is maggi?\nAI: Sorry, I don't know what you are asking. Please repeat the query properly or kindly contact us at (https://www.almoayyedintl.com/contact-us/).\n\nUser: what can you do?\nAI: I am a simple AI assistant designed to help you with your requests about Almoayyed International Group. How can I help you today?\n\nUser: What are the services you offer?\nAI: We provide proficient services that cover a diverse range of industries including \n1. information technology \n2.business automation\n3.integrated engineering\n4.safety and security\n5.door and equipment\n6.solar energy\n7.printing and marketing\n8.electrical and instrumentation\n9.industrial packaging\n10.F&B and \n11.real-estate management. \nTo know more about services please visit us at https://www.almoayyedintl.com/international-markets.\n\nUser: How are you?\nAI: Im doing good. What about you? you can ask me any queries related to Almoayyed International Group. Now tell me...How can I help you today?\n\nUser: What are you? \nUser:  Who are you?   \nUser:  What can you do?\nAI: I am an AI assistant here to help you with your questions and queries about Almoayyed International Group. How can I help you today?\n\nUser: what is maggi? \nUser: how to make maggi? \nUser: Tell me about politics. \nUser: Tell me about fashion and games and world news.\n User:I dont know what you are saying  \n User: why are you like this?\nAI: Sorry, I don't know what you are asking. Please repeat the query properly or kindly contact us at (https://www.almoayyedintl.com/contact-us/).politics\n\nUser: what are the industrial services provided by almoayyed?\nAI: Some of the Industrial services provided by almoayyed are:\n1.Contracting & Maintenance Services\n2.Trading & Contracting\n3.Integrated Security Solutions\n4.Solar Company BSC Closed \n...\nTo know more, please visit: https://www.almoayyedintl.com/the-group/industrial-services\n\nUser: I'm looking for cars\nUser: get me some suggestions\nUser: Car suggestions\nUser: Cars \nAI: Some of the cars available under Almoayyed Motors are: \nNissan\nInfinti\nRenault\nFord\nLincoln. \nTo know more, please go to https://www.almoayyed.com/our-businesses/automobiles/automobiles-home.\n\n\\n\\nUser: Direct me to services\n\\nAI: please visit: https://www.almoayyedintl.com/the-group/industrial-services. \n\n\nUser:  ${userInput} \nAI: `;
+
+            // function to get response from openai
+            async function getResponse(prompt) {
+                const response = await axios.post('https://api.openai.com/v1/engines/davinci-codex/completions', {
+                    prompt: prompt,
+                    max_tokens: 500,
+                    n: 1,
+                    stop: ["\n"]
+                }, {
+                    headers: {
+                        Authorization: 'Bearer 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',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                return response.data.choices[0].text.trim();
+            }
+
+            const response = await getResponse(prompt);
+            // Replace line breaks with HTML <br> tags
+            const formattedResponse = response.replace(/\n/g, '<br>');
+
+            // Wrap bulleted points in HTML <ul> and <li> tags
+            const bulletedResponse = formattedResponse.replace(/\n\*/g, '<ul><li>').replace(/\n/g, '</li><li>') + '</li></ul>';
+
+            let responseDiv = document.createElement('div');
+            let container2 = document.createElement('div');
+            container2.setAttribute("class", "msgCon2");
+            responseDiv.innerHTML = ` ${bulletedResponse}`;
+            responseDiv.setAttribute("class", "left");
+
+            container2.appendChild(responseDiv);
+            messageContainer.appendChild(container2);
+            document.getElementById('msg_send').value = "";
+            scroll();
+
+
+        });
+    </script>
+</body>
+
+</html>
